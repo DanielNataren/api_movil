@@ -25,7 +25,7 @@ export const uploadArchive = async (file: UploadedFile, extensionesValidas = ['m
             return {
                 originalName: file.name ,
                 name: temporalName,
-                url: result.url,
+                url: result.secure_url,
                 type: extension == "mp4" ? "video" : "audio",
                 publicId: result.public_id
             }
