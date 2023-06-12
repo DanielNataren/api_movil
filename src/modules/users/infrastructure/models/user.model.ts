@@ -19,4 +19,6 @@ export default class User {
     isActive: boolean;
     @OneToMany(() => Content, (content: Content) => content.user, {cascade: true, eager: true})
     content: Content[];
+    @Column("text", {nullable: true})
+    image: string = "";
 }

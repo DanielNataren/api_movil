@@ -10,6 +10,7 @@ export interface UserData{
     last_name?: string;
     password?: string;
     content? : Content[];
+    image?: string;
 }
 
 export default interface UserRepository {

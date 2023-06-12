@@ -10,6 +10,7 @@ export default class UserEntity {
     private readonly createdAt?: Date;
     private isActive?: boolean;
     private content?: Content[];
+    private image: string;
 
     constructor(userData: UserData){
         this.username = userData.username;
@@ -20,6 +21,8 @@ export default class UserEntity {
         this.isActive = true;
         if (userData.id) this.id = userData.id;
         if (userData.content) this.content = userData.content;
+        if (userData.image) this.image = userData.image;
+        else this.image = "";
     }
     properties() {
         
@@ -31,7 +34,8 @@ export default class UserEntity {
             last_name: this.last_name,
             createdAt: this.createdAt,
             isActive: this.isActive,
-            content: this.content
+            content: this.content,
+            image: this.image
         };
     }
 }
