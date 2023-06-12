@@ -1,14 +1,12 @@
-import { Application, Request, Response, Router } from "express";
+import { Application } from "express";
 import path from "path";
 import { paths } from "../helpers/paths";
 import cors from 'cors';
 import express from "express";
 import fileUpload from 'express-fileupload';
-import http from 'http';
-import ContentInfrastructure from "../module/infrastructure/content.infrastructure";
-import ContentApplication from "../module/application/user.application";
-import ContentController from "../module/interface/controller";
-import ContentRouter from "../module/interface/router";
+import http from 'http';;
+import contentRouter from "../modules/contents";
+import userRouter from "../modules/users";
 
 export default class Server {
     private readonly app: Application;
@@ -20,6 +18,7 @@ export default class Server {
         this.port = process.env.PORT || 8000;
         this.paths = {
             content: '/content',
+            user: '/user'
         };
         this.middlewares();
         this.routes();
@@ -40,15 +39,8 @@ export default class Server {
           }));
     }
     routes() {
-        // this.app.use(this.paths.users, userRouter);
-        this.app.get("/hola-mundo", (req: Request, res: Response) => {
-            return res.json("Hola mundo");
-        });
-        const contentI = new ContentInfrastructure();
-        const contentApp =  new ContentApplication(contentI);
-        const controller = new ContentController(contentApp);
-        const router = new ContentRouter(controller);
-        this.app.use(this.paths.content, router.router);
+        this.app.use(this.paths.user, userRouter.router);
+        this.app.use(this.paths.content, contentRouter.router);
     }
     initialize() {
         return new Promise((resolve, reject) => {

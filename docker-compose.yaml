@@ -9,27 +9,27 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - ./postgres:/var/lib/postgresql/data
-    expose:
-      - 5432
-    networks:
-      - net-ms
-  microservice_soa:
-    image: microservice_soa
-    restart: always
-    container_name: microservice_soa
-    build:
-      context: .
-      dockerfile: ./DockerFile
-      args:
-        - BASE_DIR=.
-    env_file:
-      - ./.env
     ports:
-      - 8000:8000
+      - 5432:5432
     networks:
       - net-ms
-    depends_on:
-      - db
+  # microservice_soa:
+  #   image: microservice_soa
+  #   restart: always
+  #   container_name: microservice_soa
+  #   build:
+  #     context: .
+  #     dockerfile: ./DockerFile
+  #     args:
+  #       - BASE_DIR=.
+  #   env_file:
+  #     - ./.env
+  #   ports:
+  #     - 8000:8000
+  #   networks:
+  #     - net-ms
+  #   depends_on:
+  #     - db
 
 networks:
   net-ms:

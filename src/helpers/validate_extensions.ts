@@ -1,31 +1,48 @@
 import { UploadedFile } from 'express-fileupload';
-import path from "path";
-import { v4 as uuidv4 } from 'uuid';
-import fs from "fs";
-import { upload } from '../module/domain/repository/content.repository';
+import { v2 as cloudinary } from 'cloudinary';
+import { upload } from '../modules/contents/domain/repository/content.repository';
+import { IError } from '../core/exceptions/error.exception';
+import { v4 as uuid } from 'uuid';
 
-export const uploadArchive = (file: any, folder: string, extensionesValidas = ['png','jpg','jpeg','gif','mp4','mp3']) => {
+cloudinary.config({ 
+    cloud_name: process.env.CLOUD_NAME, 
+    api_key: process.env.API_KEY, 
+    api_secret: process.env.API_SECRET 
+  });
 
-    return new Promise(( resolve, reject ): upload | void =>{
+export const uploadArchive = async (file: UploadedFile, extensionesValidas = ['mp4','mp3']): Promise<upload> => {
+
         const cutName = file.name.split('.');
-        const extension = cutName[cutName.length - 1];
-        const temporalName = `${uuidv4()}.${extension}`;
-        console.log(temporalName);
+        const extension = cutName[cutName.length - 1]
+        const temporalName = `${uuid()}.${extension}`;
         if(!extensionesValidas.includes( extension )){
-            return reject(`La extensión ${extension} no es permitida, ${extensionesValidas}`);
+            throw new IError(`La extensión ${extension} no es permitida, ${extensionesValidas}`);
         }
-        const uploadPath = path.join(__dirname, '../uploads',folder, temporalName);
-        const urlPath = 'files/' + folder + temporalName;
-        file.mv(uploadPath, function(err: any) {
-            if (err) {
-                return reject(undefined);
-            }
-            const data: upload = {
+        try {
+            const result = await cloudinary.uploader.upload(file.tempFilePath, {
+                resource_type: extension == "mp4" ? "video" : "auto",
+            });
+            return {
                 originalName: file.name ,
                 name: temporalName,
-                url: ""+process.env.url_dev+urlPath,
+                url: result.url,
+                type: extension == "mp4" ? "video" : "audio",
+                publicId: result.public_id
             }
-            return resolve(data);
-        });
-    });
+        } catch (error) {
+            throw new IError("Error al subir");
+        }
+}
+
+export const deleteArchive = async (publicId: string) => {
+    try {
+        const result = await cloudinary.uploader.destroy(publicId, {resource_type: 'video'});
+        console.log('====================================');
+        console.log('Video eliminado:', result.result);
+        console.log(publicId);
+        console.log('====================================');
+        return 'Video eliminado: '+ result.result;
+      } catch (error) {
+        throw new IError('Error al eliminar el video:', error.message);
+      }
 }
