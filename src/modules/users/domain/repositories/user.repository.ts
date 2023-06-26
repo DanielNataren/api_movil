@@ -19,6 +19,8 @@ export default interface UserRepository {
     read(): Promise<UserListResult>;
     delete(data: Partial<UserEntity>): Promise<UserDeleteResult>;
     getById(id:number): Promise<UserResult>;
+    compairPassword(password: string, user: User): Promise<Result<boolean, Error>>;
+    getByUsername(username: string): Promise<UserResult>;
 }
 
 export type UserResult = Result<User, Error>;

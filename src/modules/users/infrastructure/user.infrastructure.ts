@@ -5,6 +5,7 @@ import { dataSource } from "../../../bootstrap/database.bootstrap";
 import { IError } from "../../../core/exceptions/error.exception";
 import {err, ok} from "neverthrow";
 import UserEntity from "../domain/entities/user.entity";
+import bcryptjs from 'bcryptjs';
 
 export default class UserInfrastructure implements UserRepository {
     private readonly model: Repository<User>;
@@ -70,6 +71,47 @@ export default class UserInfrastructure implements UserRepository {
         try {
             const model = dataSource.getRepository(User);
             const user = await model.findOneBy({id});
+            if (!user){
+                const resultErr = new IError('No se encontró al usuario');
+                return err(resultErr);
+            }
+            return ok(user);
+        } catch (error) {
+            const resultErr = new IError('Error al momento de buscar el usuario: ' + error.message, 500);
+            return err(resultErr);
+        }
+
+    }
+
+    static async getUser(id: number): Promise<User> {
+        try {
+            const model = dataSource.getRepository(User);
+            const user = await model.findOneBy({id});
+            if (!user){
+                return null
+            }
+            return user;
+        } catch (error) {
+            throw new Error("Error al consultar");
+        }
+
+    }
+
+    async compairPassword(password: string, user: User){
+        try {
+            if (bcryptjs.compareSync(password, user.password))
+                return ok(true);
+            return ok(false);
+        } catch (error) {
+            const resultErr = new IError('Error al momento de buscar el usuario: ' + error.message, 500);
+            return err(resultErr);
+        }
+    }
+
+    async getByUsername(username: string): Promise<UserResult> {
+        try {
+            const model = dataSource.getRepository(User);
+            const user = await model.findOneBy({username});
             if (!user){
                 const resultErr = new IError('No se encontró al usuario');
                 return err(resultErr);

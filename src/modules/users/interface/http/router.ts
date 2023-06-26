@@ -11,6 +11,7 @@ export default class UserRouter {
     }
     mountRoutes(){
         this._router.post("/", this.controller.create);
+        this._router.post("/login", this.controller.login);
         this._router.put("/:id", this.controller.edit);
         this._router.get("/", this.controller.read);
         this._router.delete("/:id", this.controller.delete);

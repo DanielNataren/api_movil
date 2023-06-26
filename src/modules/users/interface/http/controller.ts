@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import UserApplication from "../../application/user.application";
 import { UserData } from "../../domain/repositories/user.repository";
+import { verifyJWT } from "../../../../helpers/verifyJWT";
+import { generateJWT } from "../../../../helpers/generateJWT";
 
 
 export default class UserController {
@@ -12,7 +14,20 @@ export default class UserController {
         this.read = this.read.bind(this);
         this.delete = this.delete.bind(this);
         this.getById = this.getById.bind(this);
+        this.login = this.login.bind(this);
     }
+    async getUserByToken(req: Request, res: Response) {
+        const token: string = req.body.token;
+        const user = await verifyJWT(token);
+        if (!user)
+            return res.status(401).json({
+                user: null
+            });
+        return res.status(200).json({
+            user: {...user, token}
+        });
+    }
+
     async getById(req:Request, res: Response ){
         try {
             const id = req.params.id;
@@ -28,7 +43,20 @@ export default class UserController {
         try {
             const data: UserData = req.body;
             const user = await this.app.create(data);
-            return res.json(user);
+            const token = await generateJWT(""+user.id);
+            return res.json({...user, token});
+        } catch (error) {
+            return res.status(error.status).json({
+                msg: error.message
+            });
+        }
+    }
+    async login(req: Request, res:Response) {
+        try {
+            const { username, password } = req.body;
+            const user = await this.app.login(username, password);
+            const token = await generateJWT( ""+user.id );
+            return res.status(200).json({...user, token});
         } catch (error) {
             return res.status(error.status).json({
                 msg: error.message
